@@ -1,56 +1,44 @@
-
 package com.visualpathit.account.utils;
-
 import java.net.InetSocketAddress;
-
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.visualpathit.account.beans.Components;
-
 @Service
 public class ElasticsearchUtil {
-
-    private final Components components;
-
-    public ElasticsearchUtil(Components components) {
-        this.components = components;
+	
+	private static Components object;
+    @Autowired
+    public void setComponents(Components object){
+    	ElasticsearchUtil.object = object;    	
+    	
     }
-
-    public TransportClient transportClient() {
-
-        String host = components.getElasticsearchHost();
-        String port = components.getElasticsearchPort();
-        String cluster = components.getElasticsearchCluster();
-        String node = components.getElasticsearchNode();
-
-        if (host == null || port == null ||
-            cluster == null || node == null) {
-            throw new IllegalStateException(
-                "Elasticsearch configuration is missing");
-        }
-
-        int portNumber;
-
-        try {
-            portNumber = Integer.parseInt(port);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                "Invalid Elasticsearch port: " + port, e);
-        }
-
-        Settings settings = Settings.builder()
-                .put("cluster.name", cluster)
-                .put("node.name", node)
-                .build();
-
-        return new PreBuiltTransportClient(settings)
+    public static TransportClient trannsportClient() {
+    	System.out.println(" elasticsearch client");
+    	String elasticsearchHost =object.getElasticsearchHost();
+    	String elasticsearchPort =object.getElasticsearchPort(); 
+    	String elasticsearchCluster =object.getElasticsearchCluster();
+    	String elasticsearchNode =object.getElasticsearchNode();
+    	System.out.println(" elasticsearchHost ........"+ elasticsearchHost);
+    	System.out.println(" elasticsearchHost ........"+ elasticsearchPort);
+    	TransportClient client = null;
+    	try {    	
+    	Settings settings = Settings.builder()    			
+    			.put("cluster.name",elasticsearchCluster)
+    			.put("node.name",elasticsearchNode)
+    			.build();
+    	client = new PreBuiltTransportClient(settings)
                 .addTransportAddress(
-                    new InetSocketTransportAddress(
-                        new InetSocketAddress(host, portNumber)));
-    }
+                new InetSocketTransportAddress(
+                		new InetSocketAddress(elasticsearchHost, Integer.parseInt(elasticsearchPort))));
+        
+    	}
+    	catch (Exception e) {
+			e.printStackTrace();
+		}
+    	return client;
+      }
 }
